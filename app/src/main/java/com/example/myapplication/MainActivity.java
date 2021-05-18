@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String ipStr,portStr,topicStr;
     private EditText send_content;
-    private TextView sub_content;
+    private RecyclerView sub_content_recyclerView;
     private HistoryDB historyDB;
     private static String DB_Name = "history.db";
 
@@ -52,12 +54,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             if(msg.what == 1){
-                sub_content.setText((String)msg.obj);
-            }else if(msg.what ==2){
+                Log.d("sgw_d", "MainActivity handleMessage: what == 1");
+                inflateRecycler(queryData());
+                //sub_content_recyclerView.setText((String)msg.obj);
+            }else if(msg.what == 2){
                 Toast.makeText(MainActivity.this, "发布消息回调成功", Toast.LENGTH_SHORT).show();
             }
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +79,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtSub.setOnClickListener(this);
 
         send_content = findViewById(R.id.send_content);
-        sub_content = findViewById(R.id.sub_content);
+        sub_content_recyclerView = findViewById(R.id.sub_content_recycler);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        // 设置RecyclerView的滚动方向
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        // 为RecyclerView设置布局管理器
+        sub_content_recyclerView.setLayoutManager(layoutManager);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -109,14 +119,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         historyDB.close();
     }
 
-    public void queryData(){
-        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select sub_content from history", null);
-        int sub_content_ColumnIndex = cursor.getColumnIndex("sub_content");
-        cursor.moveToFirst();
-        String sub_content_db = cursor.getString(sub_content_ColumnIndex);
 
-        historyDB.close();
-        Log.d("sgw_d", "MainActivity onCreate: sub_content_db = "+sub_content_db);
+    private void inflateRecycler(Cursor cursor) {
+        try {
+            Log.d("sgw_d", "MainActivity inflateRecycler: ");
+            CursorRecyclerViewAdapter<LineViewHolder> adapter =
+                    new CursorRecyclerViewAdapter<>(this, cursor, R.layout.sub_content_line,
+                            new int[]{1}, new String[]{ "sub_content"},
+                            LineViewHolder.class.getConstructor(MainActivity.class,View.class));
+
+            sub_content_recyclerView.setAdapter(adapter);
+        }catch (Exception e){
+            Log.d("sgw_d", "MainActivity inflateRecycler: Exception = "+e);
+        }
+    }
+
+    public Cursor queryData(){
+        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select * from history", null);
+//        int sub_content_ColumnIndex = cursor.getColumnIndex("sub_content");
+//        cursor.moveToFirst();
+//        String sub_content_db = cursor.getString(sub_content_ColumnIndex);
+//
+//        historyDB.close();
+//        Log.d("sgw_d", "MainActivity onCreate: sub_content_db = "+sub_content_db);
+        return cursor;
     }
 
     @Override
@@ -246,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.bt_send:
-                queryData();
+                //queryData();
                 MqttTopic topic = mMqClint.getTopic(topicStr);
                 MqttMessage message = new MqttMessage();
                 message.setPayload(send_content.getText().toString().getBytes());
@@ -255,6 +281,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
+
+                inflateRecycler(queryData());
+                Log.d("sgw_d", "MainActivity onClick: inflateRecycler end");
                 break;
         }
     }
@@ -289,5 +318,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
+    }
+
+
+    public class LineViewHolder extends RecyclerView.ViewHolder
+    {
+        //TextView titleView;
+        TextView sub_content;
+        public LineViewHolder(View itemView)
+        {
+            super(itemView);
+            //titleView = itemView.findViewById(R.id.sub_id);
+            sub_content = itemView.findViewById(R.id.sub_content);
+        }
     }
 }
