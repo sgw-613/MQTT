@@ -16,6 +16,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
+        <provider
+            android:name=".HistoryProvider"
+            android:authorities="com.sim.providers.historyprovider"
+            android:enabled="true"
+            android:exported="true"></provider>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -29,8 +35,8 @@
         <activity
             android:name=".EditActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication.NoActionBar">
-        </activity>
+            android:theme="@style/Theme.MyApplication.NoActionBar"></activity>
+
         <service android:name="org.eclipse.paho.android.service.MqttService" />
     </application>
 

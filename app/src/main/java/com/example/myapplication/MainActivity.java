@@ -1,6 +1,8 @@
 package com.example.myapplication;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -41,6 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String ipStr,portStr,topicStr;
     private EditText send_content;
     private TextView sub_content;
+    private HistoryDB historyDB;
+    private static String DB_Name = "history.db";
+
+
     private Handler handler = new Handler(Looper.getMainLooper()){
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -57,6 +63,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        historyDB = new HistoryDB(this, DB_Name);
+        //insertData("Hellow World !");
+        //queryData();
 
         Button mBtSub = this.findViewById(R.id.bt_sub);
         Button mBtSend = this.findViewById(R.id.bt_send);
@@ -86,6 +96,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    public void insertData(String data) {
+
+        Log.d("sgw_d", "MainActivity insertData: ");
+        ContentValues values = new ContentValues();
+
+        // 向该对象中插入键值对
+        values.put(HistoryDB.SUB_CONTENT, data);
+        historyDB.getReadableDatabase().insert(HistoryDB.TABLE,null,values);
+        historyDB.close();
+    }
+
+    public void queryData(){
+        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select sub_content from history", null);
+        int sub_content_ColumnIndex = cursor.getColumnIndex("sub_content");
+        cursor.moveToFirst();
+        String sub_content_db = cursor.getString(sub_content_ColumnIndex);
+
+        historyDB.close();
+        Log.d("sgw_d", "MainActivity onCreate: sub_content_db = "+sub_content_db);
     }
 
     @Override
@@ -215,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.bt_send:
+                queryData();
                 MqttTopic topic = mMqClint.getTopic(topicStr);
                 MqttMessage message = new MqttMessage();
                 message.setPayload(send_content.getText().toString().getBytes());
