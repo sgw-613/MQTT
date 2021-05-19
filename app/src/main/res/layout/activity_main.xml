@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <TextView
-            android:layout_margin="40dp"
+            android:layout_marginTop="40dp"
             android:textColor="@color/black"
             android:textStyle="bold"
             android:gravity="center"
@@ -42,7 +42,8 @@
             android:layout_height="wrap_content"/>
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sub_content_recycler"
-            android:layout_margin="40dp"
+            android:layout_margin="10dp"
+            android:layout_marginStart="50dp"
             android:textSize="13sp"
             android:layout_width="match_parent"
             android:layout_height="200dp"/>

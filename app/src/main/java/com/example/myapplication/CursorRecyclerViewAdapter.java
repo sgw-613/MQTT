@@ -38,7 +38,7 @@ public class CursorRecyclerViewAdapter<T extends RecyclerView.ViewHolder> extend
 		this.viewFields = viewFields;
 		this.constructor = constructor;
 		// 遍历Cursor中的每条记录,将这些记录封装到List集合中
-		Log.d("sgw_d", "CursorRecyclerViewAdapter CursorRecyclerViewAdapter: ");
+		//Log.d("sgw_d", "CursorRecyclerViewAdapter CursorRecyclerViewAdapter: ");
 		while (cursor.moveToNext())
 		{
 			Map<Integer, String> row = new HashMap<>();
@@ -46,7 +46,7 @@ public class CursorRecyclerViewAdapter<T extends RecyclerView.ViewHolder> extend
 			{
 				// 从Cursor中取出查询结果
 				String column = cursor.getString(columnIndex);
-				Log.d("sgw_d", "CursorRecyclerViewAdapter CursorRecyclerViewAdapter: column = "+column);
+				//Log.d("sgw_d", "CursorRecyclerViewAdapter CursorRecyclerViewAdapter: column = "+column);
 				row.put(columnIndex, column);
 			}
 			cursorValues.add(row);
@@ -55,7 +55,7 @@ public class CursorRecyclerViewAdapter<T extends RecyclerView.ViewHolder> extend
 	@NonNull @Override
 	public T onCreateViewHolder(@NonNull ViewGroup viewGroup, int i)
 	{
-		Log.d("sgw_d", "CursorRecyclerViewAdapter onCreateViewHolder: ");
+		//Log.d("sgw_d", "CursorRecyclerViewAdapter onCreateViewHolder: ");
 		// 加载列表项对应的布局文件
 		View item = LayoutInflater.from(context).inflate(resId,
 				new LinearLayout(context), false);
@@ -71,7 +71,7 @@ public class CursorRecyclerViewAdapter<T extends RecyclerView.ViewHolder> extend
 	@Override
 	public void onBindViewHolder(@NonNull T viewHolder, int position)
 	{
-		Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: ");
+		//Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: ");
 		Class<?> clazz = viewHolder.getClass();
 		// 遍历viewHolder包含的各Field，为这些Field设置所显示的值
 		for(int i = 0; i < viewFields.length; i++)

@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 inflateRecycler(queryData());
                 //sub_content_recyclerView.setText((String)msg.obj);
             }else if(msg.what == 2){
+                Log.d("sgw_d", "MainActivity handleMessage: what == 2");
                 Toast.makeText(MainActivity.this, "发布消息回调成功", Toast.LENGTH_SHORT).show();
             }
         }
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         send_content = findViewById(R.id.send_content);
         sub_content_recyclerView = findViewById(R.id.sub_content_recycler);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         // 设置RecyclerView的滚动方向
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -207,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //订阅消息
             connect();
         } catch (MqttException e) {
+            Log.d("sgw_d", "MainActivity initMqtt: " + e);
             e.printStackTrace();
         }
     }
@@ -238,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mMqClint.connect(mMqttConnectOptions);
                 }
             } catch (Exception e) {
+                Log.d("sgw_d", "MainActivity connect: "+e);
                 e.printStackTrace();
             }
         }).start();
@@ -279,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     topic.publish(message);
                 } catch (MqttException e) {
+                    Log.d("sgw_d", "MainActivity onClick: bt_send = "+e);
                     e.printStackTrace();
                 }
 
@@ -303,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            Log.i(TAG, "messageArrived: 接收消息回调："+message.toString());
+            Log.d("sgw_d",  "messageArrived: 接收消息回调："+message.toString());
 
             Message msg = handler.obtainMessage();
             msg.what = 1;
@@ -313,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void deliveryComplete(IMqttDeliveryToken token) {
-            Log.i(TAG, "deliveryComplete: 发布消息回调");
+            Log.d("sgw_d", "deliveryComplete: 发布消息回调");
             handler.sendEmptyMessage(2);
         }
 
