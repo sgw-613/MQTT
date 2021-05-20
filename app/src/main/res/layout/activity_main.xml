@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <TextView
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="10dp"
             android:textColor="@color/black"
             android:textStyle="bold"
             android:gravity="center"
@@ -46,7 +46,7 @@
             android:layout_marginStart="50dp"
             android:textSize="13sp"
             android:layout_width="match_parent"
-            android:layout_height="200dp"/>
+            android:layout_height="150dp"/>
 
         <Button
             android:id="@+id/bt_sub"
@@ -58,7 +58,7 @@
             android:id="@+id/send_content"
             android:hint="请输入你想发送的内容"
             android:textColorHint="@color/purple_200"
-            android:layout_margin="40dp"
+            android:layout_margin="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

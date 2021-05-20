@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public Cursor queryData(){
-        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select * from history order by id desc", null);
+        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select * from history order by _id desc", null);
         return cursor;
     }
 
