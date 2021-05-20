@@ -13,7 +13,7 @@ public class HistoryDB extends SQLiteOpenHelper {
 
     //数据库版本号
     private static Integer Version = 1;
-    private static String DB_Name = "history.db";
+    public static String DB_Name = "history.db";
     public static String SUB_CONTENT = "sub_content";
     public static String TABLE = "history";
 
@@ -38,7 +38,7 @@ public class HistoryDB extends SQLiteOpenHelper {
 
     public HistoryDB(Context context,String name)
     {
-        this(context, DB_Name, Version);
+        this(context, name, Version);
     }
 
 
@@ -47,7 +47,7 @@ public class HistoryDB extends SQLiteOpenHelper {
         Log.d("sgw_d", "HistoryDB onCreate: 创建数据库和表");
         //创建了数据库并创建一个叫records的表
         //SQLite数据创建支持的数据类型： 整型数据，字符串类型，日期类型，二进制的数据类型
-        String sql = "create table history(id int primary key,sub_content varchar(200))";
+        String sql = "create table history(_id INTEGER PRIMARY KEY AUTOINCREMENT,sub_content varchar(200))";
         //execSQL用于执行SQL语句
         //完成数据库的创建
         db.execSQL(sql);

@@ -4,12 +4,16 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +25,7 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -40,7 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener , LoaderManager.LoaderCallbacks {
 
     private String ipStr,portStr,topicStr;
     private EditText send_content;
@@ -55,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.handleMessage(msg);
             if(msg.what == 1){
                 Log.d("sgw_d", "MainActivity handleMessage: what == 1");
+                insertData((String)msg.obj);
                 inflateRecycler(queryData());
                 //sub_content_recyclerView.setText((String)msg.obj);
             }else if(msg.what == 2){
@@ -70,8 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        historyDB = new HistoryDB(this, DB_Name);
-        //insertData("Hellow World !");
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        historyDB = new HistoryDB(this, HistoryDB.DB_Name);
+        //insertData("Hellow World p!");
         //queryData();
 
         Button mBtSub = this.findViewById(R.id.bt_sub);
@@ -117,8 +124,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // 向该对象中插入键值对
         values.put(HistoryDB.SUB_CONTENT, data);
-        historyDB.getReadableDatabase().insert(HistoryDB.TABLE,null,values);
-        historyDB.close();
+
+        getContentResolver().insert(HistoryProvider.SUBCONTENTS_URI, values);
+
+//        historyDB.getReadableDatabase().insert(HistoryDB.TABLE,null,values);
+//        historyDB.close();
     }
 
 
@@ -137,13 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public Cursor queryData(){
-        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select * from history", null);
-//        int sub_content_ColumnIndex = cursor.getColumnIndex("sub_content");
-//        cursor.moveToFirst();
-//        String sub_content_db = cursor.getString(sub_content_ColumnIndex);
-//
-//        historyDB.close();
-//        Log.d("sgw_d", "MainActivity onCreate: sub_content_db = "+sub_content_db);
+        Cursor cursor = historyDB.getReadableDatabase().rawQuery("select * from history order by id desc", null);
         return cursor;
     }
 
@@ -276,7 +280,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.bt_send:
-                //queryData();
                 MqttTopic topic = mMqClint.getTopic(topicStr);
                 MqttMessage message = new MqttMessage();
                 message.setPayload(send_content.getText().toString().getBytes());
@@ -287,10 +290,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
 
-                inflateRecycler(queryData());
-                Log.d("sgw_d", "MainActivity onClick: inflateRecycler end");
                 break;
         }
+    }
+
+    @NonNull
+    @org.jetbrains.annotations.NotNull
+    @Override
+    public Loader onCreateLoader(int id, @Nullable @org.jetbrains.annotations.Nullable Bundle args) {
+
+
+        Loader loader = new CursorLoader(this);
+
+
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull @org.jetbrains.annotations.NotNull Loader loader, Object data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull @org.jetbrains.annotations.NotNull Loader loader) {
+
     }
 
     public static class PushCallBack implements MqttCallback {
