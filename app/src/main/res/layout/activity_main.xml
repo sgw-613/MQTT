@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="#587DD0"
             app:popupTheme="@style/Theme.MyApplication.PopupOverlay" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -31,41 +31,74 @@
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <TextView
-            android:layout_marginTop="10dp"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:text="收到的订阅消息内容"
-            android:textSize="18sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+<!--        <TextView-->
+<!--            android:textColor="@color/black"-->
+<!--            android:textStyle="bold"-->
+<!--            android:gravity="center"-->
+<!--            android:text="收到的订阅消息内容"-->
+<!--            android:textSize="18sp"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"/>-->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sub_content_recycler"
             android:layout_margin="10dp"
-            android:layout_marginStart="50dp"
+            android:layout_marginStart="10dp"
             android:textSize="13sp"
             android:layout_width="match_parent"
-            android:layout_height="150dp"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
-        <Button
-            android:id="@+id/bt_sub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="开始订阅" />
-
-        <EditText
-            android:id="@+id/send_content"
-            android:hint="请输入你想发送的内容"
-            android:textColorHint="@color/purple_200"
-            android:layout_margin="20dp"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:id="@+id/bt_send"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="发送"/>
+            android:gravity="center"
+            >
+            <Button
+                android:id="@+id/bt_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:text="开始订阅" />
+
+            <Button
+                android:id="@+id/bt_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="清空记录" />
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center|bottom"
+            android:padding="10dp"
+            >
+
+            <EditText
+                android:id="@+id/send_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:hint="请输入你想发送的内容"
+                android:background="@drawable/weixin_edittext"
+                android:layout_alignParentBottom="true"
+                android:layout_marginRight="30dp"
+                android:textColor="#000000"/>
+
+            <Button
+                android:id="@+id/bt_send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/send_btn"
+                android:text="发送"/>
+        </LinearLayout>
+
+
     </LinearLayout>
 </LinearLayout>

@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -31,6 +32,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jcodecraeer.xrecyclerview.XRecyclerView;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -47,11 +50,12 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener , LoaderManager.LoaderCallbacks {
 
-    private String ipStr,portStr,topicStr;
+    private String ipStr,portStr,topicStr,userName,password;
     private EditText send_content;
     private RecyclerView sub_content_recyclerView;
     private HistoryDB historyDB;
     private static String DB_Name = "history.db";
+    private MyContentObserver myContentObserver;
 
 
     private Handler handler = new Handler(Looper.getMainLooper()){
@@ -61,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(msg.what == 1){
                 Log.d("sgw_d", "MainActivity handleMessage: what == 1");
                 insertData((String)msg.obj);
-                inflateRecycler(queryData());
+                //inflateRecycler(queryData());
                 //sub_content_recyclerView.setText((String)msg.obj);
             }else if(msg.what == 2){
                 Log.d("sgw_d", "MainActivity handleMessage: what == 2");
@@ -82,8 +86,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //queryData();
 
         Button mBtSub = this.findViewById(R.id.bt_sub);
+        Button mClear = this.findViewById(R.id.bt_clear);
         Button mBtSend = this.findViewById(R.id.bt_send);
         mBtSend.setOnClickListener(this);
+        mClear.setOnClickListener(this);
         mBtSub.setOnClickListener(this);
 
         send_content = findViewById(R.id.send_content);
@@ -95,6 +101,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 为RecyclerView设置布局管理器
         sub_content_recyclerView.setLayoutManager(layoutManager);
 
+//        sub_content_recyclerView.setLoadingListener(new XRecyclerView.LoadingListener() {
+//            @Override
+//            public void onRefresh() {
+//                //refresh data here
+//                for(int i = 0; i < 15 ;i++){
+//
+//                }
+//                //sub_content_recyclerView.refreshComplete();
+//            }
+//
+//            @Override
+//            public void onLoadMore() {
+//                // load more data here
+//            }
+//        });
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -104,10 +127,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ipStr = (String)Utils.get(this,EditActivity.IP_ADDRESS,EditActivity.DEFAULT_IP);
         portStr = (String)Utils.get(this,EditActivity.IP_PORT,EditActivity.DEFAULT_PORT);
         topicStr = (String)Utils.get(this,EditActivity.TOPIC_NAME,EditActivity.DEFAULT_TOPIC);
+        userName = (String)Utils.get(this,EditActivity.USER_NAME,EditActivity.DEFAULT_USERNAME);
+        password = (String)Utils.get(this,EditActivity.PASSWORD,EditActivity.DEFAULT_PASSWORD);
 
         TextView info = this.findViewById(R.id.info);
         info.setText("地址:"+ipStr+"；端口："+portStr+"；主题："+topicStr);
         initMqtt();
+
+
+        myContentObserver = new MyContentObserver(new Handler());
+        getContentResolver().registerContentObserver(HistoryProvider.SUBCONTENTS_URI,true,myContentObserver);
     }
 
     @Override
@@ -126,9 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         values.put(HistoryDB.SUB_CONTENT, data);
 
         getContentResolver().insert(HistoryProvider.SUBCONTENTS_URI, values);
-
-//        historyDB.getReadableDatabase().insert(HistoryDB.TABLE,null,values);
-//        historyDB.close();
+        getContentResolver().notifyChange(HistoryProvider.SUBCONTENTS_URI,null);
     }
 
 
@@ -149,6 +176,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public Cursor queryData(){
         Cursor cursor = historyDB.getReadableDatabase().rawQuery("select * from history order by _id desc", null);
         return cursor;
+    }
+
+    public void clearData(String topicStr){
+        //String sql = "delete from " + HistoryDB.TABLE + " where topicStr = " + topicStr;
+        String sql = "delete from " + HistoryDB.TABLE ;
+//        historyDB.getReadableDatabase().execSQL("delete FROM "+HistoryDB.TABLE + " where sub_content = 'abc'");
+        historyDB.getReadableDatabase().execSQL("delete FROM "+HistoryDB.TABLE);
+        getContentResolver().notifyChange(HistoryProvider.SUBCONTENTS_URI,null);
     }
 
     @Override
@@ -201,9 +236,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //清除缓存
             mMqttConnectOptions.setCleanSession(true);
             //设置用户名
-           // mMqttConnectOptions.setUserName();
+            mMqttConnectOptions.setUserName(userName);
             //设置用户密码
-            //mMqttConnectOptions.setPassword();
+            mMqttConnectOptions.setPassword(password.toCharArray());
             // 设置超时时间，单位：秒
             mMqttConnectOptions.setConnectionTimeout(10);
             // 心跳包发送间隔，单位：秒
@@ -222,6 +257,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        getContentResolver().unregisterContentObserver(myContentObserver);
         try {
             if (mMqClint != null) {
                 //开始链接
@@ -274,10 +311,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (mMqClint.isConnected()){
                     try {
                         mMqClint.subscribe(topicStr,0);
+                        inflateRecycler(queryData());
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
                 }
+                break;
+            case R.id.bt_clear:
+                clearData(topicStr);
                 break;
             case R.id.bt_send:
                 MqttTopic topic = mMqClint.getTopic(topicStr);
@@ -289,7 +330,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d("sgw_d", "MainActivity onClick: bt_send = "+e);
                     e.printStackTrace();
                 }
-
                 break;
         }
     }
@@ -358,6 +398,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super(itemView);
             //titleView = itemView.findViewById(R.id.sub_id);
             sub_content = itemView.findViewById(R.id.sub_content);
+        }
+    }
+
+    class MyContentObserver extends ContentObserver {
+        public MyContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+
+            Log.d("sgw_d", "MyContentObserver onChange: ");
+        }
+
+        @Override
+        public void onChange(boolean selfChange, @Nullable Uri uri) {
+            super.onChange(selfChange, uri);
+            inflateRecycler(queryData());
         }
     }
 }

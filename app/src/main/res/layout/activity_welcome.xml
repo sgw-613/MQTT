@@ -14,9 +14,9 @@
         pv:pv_host_text="SIM"
         pv:pv_host_text_size="80sp"
         pv:pv_particle_text=".com"
-        pv:pv_text_anim_time="1000"
-        pv:pv_spread_anim_time="5000"
-        pv:pv_host_text_anim_time="1000" />
+        pv:pv_text_anim_time="500"
+        pv:pv_spread_anim_time="500"
+        pv:pv_host_text_anim_time="500" />
 
 
 <!--            <me.wangyuwei.particleview.ParticleView

@@ -17,6 +17,7 @@ public class HistoryProvider extends ContentProvider {
     private static final String AUTHORITY = "com.sim.providers.historyprovider";
 
     public static final Uri SUBCONTENTS_URI = Uri.parse("content://" + AUTHORITY + "/sub_contents");
+    public static final Uri AUTHORITY_URI = Uri.parse("content://" + AUTHORITY);
 
     static {
         uriMatcher.addURI(AUTHORITY,"sub_contents", SUBCONTENTS_CODE);

@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,6 +84,15 @@ public class CursorRecyclerViewAdapter<T extends RecyclerView.ViewHolder> extend
 				{
 					TextView tv = (TextView) f.get(viewHolder);
 					tv.setText(cursorValues.get(position).get(columnIndexs[i]));
+
+					//隔行变色
+					if (position % 2 == 0){
+						tv.setBackgroundColor(Color.parseColor("#DADADA"));
+					}else{
+						tv.setBackgroundColor(Color.parseColor("#F5F5F5"));
+					}
+
+
 				}
 			} catch (Exception e) {
 				Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: " +e);
