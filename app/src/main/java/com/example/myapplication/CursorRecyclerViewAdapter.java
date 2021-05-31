@@ -62,13 +62,28 @@ public class CursorRecyclerViewAdapter<T extends RecyclerView.ViewHolder> extend
 				new LinearLayout(context), false);
 		try {
 			// 将item封装成ViewHolder的子类后返回
-			return constructor.newInstance(context, item);
+			//return constructor.newInstance(context, item);
+			return (T) new LineViewHolder(item);
 		} catch (Exception e) {
 			Log.d("sgw_d", "CursorRecyclerViewAdapter onCreateViewHolder: " + e);
 			e.printStackTrace();
 			return null;
 		}
 	}
+
+	public class LineViewHolder extends RecyclerView.ViewHolder
+	{
+		//TextView titleView;
+		TextView sub_content;
+		public LineViewHolder(View itemView)
+		{
+			super(itemView);
+			//titleView = itemView.findViewById(R.id.sub_id);
+			sub_content = itemView.findViewById(R.id.sub_content);
+		}
+	}
+
+
 	@Override
 	public void onBindViewHolder(@NonNull T viewHolder, int position)
 	{

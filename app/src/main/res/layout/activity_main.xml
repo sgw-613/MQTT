@@ -17,88 +17,152 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#587DD0"
-            app:popupTheme="@style/Theme.MyApplication.PopupOverlay" />
+            app:popupTheme="@style/Theme.MyApplication.PopupOverlay" >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="ToolBar"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:textStyle="bold"/>
+
+            <com.nightonke.boommenu.BoomMenuButton
+                android:id="@+id/bmb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                app:bmb_backgroundEffect="false"
+                app:bmb_boomEnum="boomParabola_2"
+                app:bmb_piecePlaceEnum="piecePlace_ham_2"
+                app:bmb_buttonPlaceEnum="buttonPlace_ham_2"
+                app:bmb_showDuration="500"
+                app:bmb_hideDuration="500"/>
+<!--            bmb_piecePlaceEnum 按钮数量-->
+
+        </RelativeLayout>
+        </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
+
+
+    <!-- 定义一个TabLayout组件 -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <!-- 在TabLayout中定义3个Tab标签 -->
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tabItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="订阅" />
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tabItem2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+
     <TextView
-        android:id="@+id/info"
+        android:id="@+id/main_info"
         android:textSize="12sp"
         android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-    <LinearLayout
-        android:orientation="vertical"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        />
+
+    <!-- 定义一个ViewPager组件 -->
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-<!--        <TextView-->
-<!--            android:textColor="@color/black"-->
-<!--            android:textStyle="bold"-->
-<!--            android:gravity="center"-->
-<!--            android:text="收到的订阅消息内容"-->
-<!--            android:textSize="18sp"-->
+        android:layout_height="match_parent" />
+
+
+
+
+<!--    <TextView-->
+<!--        android:id="@+id/info"-->
+<!--        android:textSize="12sp"-->
+<!--        android:gravity="center"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"/>-->
+<!--    <LinearLayout-->
+<!--        android:orientation="vertical"-->
+<!--        android:gravity="center"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/sub_content_recycler"-->
+<!--            android:layout_margin="10dp"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:textSize="13sp"-->
 <!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"/>-->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/sub_content_recycler"
-            android:layout_margin="10dp"
-            android:layout_marginStart="10dp"
-            android:textSize="13sp"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+<!--            android:layout_height="0dp"-->
+<!--            android:layout_weight="1"/>-->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            >
-            <Button
-                android:id="@+id/bt_sub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="30dp"
-                android:text="开始订阅" />
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:gravity="center"-->
+<!--            >-->
+<!--            <Button-->
+<!--                android:id="@+id/bt_sub"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginRight="30dp"-->
+<!--                android:text="开始订阅" />-->
 
-            <Button
-                android:id="@+id/bt_clear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
-                android:text="清空记录" />
+<!--            <Button-->
+<!--                android:id="@+id/bt_clear"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginLeft="30dp"-->
+<!--                android:text="清空记录" />-->
 
-        </LinearLayout>
+<!--        </LinearLayout>-->
 
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_gravity="center|bottom"
-            android:padding="10dp"
-            >
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:gravity="center"-->
+<!--            android:layout_gravity="center|bottom"-->
+<!--            android:padding="10dp"-->
+<!--            >-->
 
-            <EditText
-                android:id="@+id/send_content"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:hint="请输入你想发送的内容"
-                android:background="@drawable/weixin_edittext"
-                android:layout_alignParentBottom="true"
-                android:layout_marginRight="30dp"
-                android:textColor="#000000"/>
+<!--            <EditText-->
+<!--                android:id="@+id/send_content"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:hint="请输入你想发送的内容"-->
+<!--                android:background="@drawable/weixin_edittext"-->
+<!--                android:layout_alignParentBottom="true"-->
+<!--                android:layout_marginRight="30dp"-->
+<!--                android:textColor="#000000"/>-->
 
-            <Button
-                android:id="@+id/bt_send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/send_btn"
-                android:text="发送"/>
-        </LinearLayout>
+<!--            <Button-->
+<!--                android:id="@+id/bt_send"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:backgroundTint="@color/send_btn"-->
+<!--                android:text="发送"/>-->
+<!--        </LinearLayout>-->
 
 
-    </LinearLayout>
+<!--    </LinearLayout>-->
 </LinearLayout>

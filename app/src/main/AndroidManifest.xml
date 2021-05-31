@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
         <provider
-            android:name=".HistoryProvider"
+            android:name=".database.HistoryProvider"
             android:authorities="com.sim.providers.historyprovider"
             android:enabled="true"
             android:exported="true"></provider>

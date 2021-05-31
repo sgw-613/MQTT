@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.database;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;

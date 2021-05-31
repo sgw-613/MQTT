@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llAddComment"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:elevation="8dp"
+    android:gravity="center_vertical"
+    android:paddingBottom="4dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="8dp">
+
+    <EditText
+        android:id="@+id/send_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#555555"
+        android:textSize="14sp" />
+
+    <com.example.myapplication.view.SendMsgButton
+        android:id="@+id/bt_send"
+        android:layout_width="72dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginLeft="8dp"
+        android:background="@drawable/btn_send_msg"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:text="Send" />
+</LinearLayout>
