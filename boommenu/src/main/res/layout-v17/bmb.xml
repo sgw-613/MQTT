@@ -12,10 +12,6 @@
         android:background="?android:actionBarItemBackground"
         android:clickable="true" 
         android:layoutDirection="ltr"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="123s"
-        />
+
 
 </com.nightonke.boommenu.BMBShadow>

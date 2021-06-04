@@ -1,7 +1,9 @@
 package com.example.myapplication;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,9 +21,12 @@ import android.widget.Toast;
 import com.example.myapplication.view.SendFragment;
 import com.example.myapplication.view.SubFragment;
 import com.google.android.material.tabs.TabLayout;
+import com.nightonke.boommenu.BoomButtons.BoomButton;
+import com.nightonke.boommenu.BoomButtons.HamButton;
 import com.nightonke.boommenu.BoomMenuButton;
 import com.nightonke.boommenu.BuilderManager;
 import com.nightonke.boommenu.ButtonEnum;
+import com.nightonke.boommenu.OnBoomListener;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -31,11 +36,13 @@ public class MainActivity extends AppCompatActivity {
     private String ipStr,portStr,topicStr,userName,password;
     private BoomMenuButton bmb;
 
+    private Context mContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mContext = this;
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -50,19 +57,78 @@ public class MainActivity extends AppCompatActivity {
 
         int pieceNumber = bmb.getPiecePlaceEnum().pieceNumber();
         Log.d("sgw_d", "MainActivity onCreate: pieceNumber = "+pieceNumber);
-        for (int i = 0; i < pieceNumber; i++)
-            bmb.addBuilder(BuilderManager.getHamButtonBuilderWithDifferentPieceColor());
-
-        bmb.setOnSubButtonClickListener(new BoomMenuButton.OnSubButtonClickListener() {
-            @Override
-            public void onClick() {
-                Log.d("sgw_d", "MainActivity onClick: ");
+        for (int i = 0; i < pieceNumber; i++){
+            Log.d("sgw_d", "MainActivity onCreate: addBuilder");
+            HamButton.Builder Ham_Button;
+            switch (i) {
+                case 0:
+                    Ham_Button = BuilderManager.getHamButtonBuilderWithDifferentPieceColor();
+                    Ham_Button.normalImageRes(R.drawable.ic_edit)
+                        .normalTextRes(R.string.action_addr)
+                            .normalTextColor(Color.BLACK)
+                            .subNormalTextColor(Color.BLACK)
+                        .subNormalTextRes(R.string.sub_action_addr)
+                        .pieceColor(Color.WHITE)
+                        .imagePadding(new Rect(35,35,35,35));
+                    Log.d("sgw_d", "MainActivity onCreate: 0");
+                    bmb.addBuilder(Ham_Button);
+                    break;
+                case 1:
+                    Ham_Button = BuilderManager.getHamButtonBuilderWithDifferentPieceColor();
+                    Ham_Button.normalImageRes(R.drawable.help)
+                            .normalTextRes(R.string.action_settings)
+                            .subNormalTextRes(R.string.sub_action_settings)
+                            .normalTextColor(Color.BLACK)
+                            .subNormalTextColor(Color.BLACK)
+                            .pieceColor(Color.WHITE)
+                            .imagePadding(new Rect(35,35,35,35));
+                    Log.d("sgw_d", "MainActivity onCreate: 1");
+                    bmb.addBuilder(Ham_Button);
+                    break;
             }
 
-//            @Override
-//            public void onClick(int buttonIndex) {
-//                // 返回被点击的子按钮下标
-//            }
+        }
+
+        bmb.setOnBoomListener(new OnBoomListener() {
+            @Override
+            public void onClicked(int index, BoomButton boomButton) {
+                switch (index){
+                    case 0:
+                        //编辑
+                        Intent it= new Intent(MainActivity.this,EditActivity.class);
+                        startActivityForResult(it,1001);
+                        break;
+                    case 1:
+                        String hint = getResources().getString(R.string.app_name)+",版本号："+Utils.getVerName(mContext);
+                        Toast.makeText(MainActivity.this, hint, Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+
+            @Override
+            public void onBackgroundClick() {
+
+            }
+
+            @Override
+            public void onBoomWillHide() {
+
+            }
+
+            @Override
+            public void onBoomDidHide() {
+
+            }
+
+            @Override
+            public void onBoomWillShow() {
+
+            }
+
+            @Override
+            public void onBoomDidShow() {
+
+            }
         });
 
 

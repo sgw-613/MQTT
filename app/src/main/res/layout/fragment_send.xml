@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:elevation="8dp"
-    android:gravity="center_vertical"
+    android:gravity="center|bottom"
     android:paddingBottom="4dp"
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
@@ -27,5 +27,5 @@
         android:background="@drawable/btn_send_msg"
         android:elevation="4dp"
         android:orientation="vertical"
-        android:text="Send" />
+        android:text="发送" />
 </LinearLayout>

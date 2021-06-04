@@ -44,6 +44,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+//import cn.pedant.SweetAlert.SweetAlertDialog;
+
 /**
  * A simple {@link Fragment} subclass.
  *
@@ -118,15 +120,6 @@ public class SubFragment extends Fragment implements View.OnClickListener{
     }
 
 
-    private View inflateFragment_send(LayoutInflater inflater, ViewGroup container){
-
-        View rootview = inflater.inflate(R.layout.fragment_send, container, false);
-        //textinfo = rootview.findViewById(R.id.info);
-        Button mBtSend = rootview.findViewById(R.id.bt_send);
-        mBtSend.setOnClickListener(this);
-        return rootview;
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -187,6 +180,7 @@ public class SubFragment extends Fragment implements View.OnClickListener{
             mMqttConnectOptions.setCleanSession(true);
             //设置用户名
             mMqttConnectOptions.setUserName(userName);
+            Log.d("sgw_d", "SubFragment initMqtt: userName = "+userName);
             //设置用户密码
             mMqttConnectOptions.setPassword(password.toCharArray());
             // 设置超时时间，单位：秒
@@ -279,6 +273,15 @@ public class SubFragment extends Fragment implements View.OnClickListener{
         mContext.getContentResolver().notifyChange(HistoryProvider.SUBCONTENTS_URI,null);
     }
 
+    private boolean clearOrNot(){
+//        new SweetAlertDialog(mContext, SweetAlertDialog.WARNING_TYPE)
+//                .setTitleText("Are you sure?")
+//                .setContentText("Won't be able to recover this file!")
+//                .setConfirmText("Yes,delete it!")
+//                .show();
+        return false;
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -293,6 +296,7 @@ public class SubFragment extends Fragment implements View.OnClickListener{
                 }
                 break;
             case R.id.bt_clear:
+                clearOrNot();
                 clearData(topicStr);
                 break;
         }
@@ -349,19 +353,13 @@ public class SubFragment extends Fragment implements View.OnClickListener{
             Log.d("sgw_d", "deliveryComplete: 发布消息回调");
             handler.sendEmptyMessage(2);
         }
-
-
     }
 
 
-    public class LineViewHolder extends RecyclerView.ViewHolder
-    {
-        //TextView titleView;
+    public class LineViewHolder extends RecyclerView.ViewHolder {
         TextView sub_content;
-        public LineViewHolder(View itemView)
-        {
+        public LineViewHolder(View itemView) {
             super(itemView);
-            //titleView = itemView.findViewById(R.id.sub_id);
             sub_content = itemView.findViewById(R.id.sub_content);
         }
     }

@@ -937,12 +937,6 @@ public class BoomMenuButton extends FrameLayout implements InnerOnBoomButtonClic
                     -boomButtons.get(i).centerPoint.y);
     }
 
-    private OnSubButtonClickListener mButtonClickListener;
-    public void setOnSubButtonClickListener(OnSubButtonClickListener buttonClickListener){
-        mButtonClickListener = buttonClickListener;
-    }
-
-
     private BoomButton putBoomButtonInBackground(BoomButton boomButton, PointF position) {
         createBackground();
         boomButton.place(
@@ -951,15 +945,6 @@ public class BoomMenuButton extends FrameLayout implements InnerOnBoomButtonClic
                 boomButton.trueWidth(),
                 boomButton.trueHeight());
         boomButton.setVisibility(INVISIBLE);
-        Log.d("sgw_d", "BoomMenuButton putBoomButtonInBackground: ");
-        boomButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mButtonClickListener != null){
-                    mButtonClickListener.onClick();
-                }
-            }
-        });
         background.addView(boomButton);
         return boomButton;
     }
@@ -1051,6 +1036,7 @@ public class BoomMenuButton extends FrameLayout implements InnerOnBoomButtonClic
 
     @Override
     public void onButtonClick(int index, BoomButton boomButton) {
+        Log.d("sgw_d", "BoomMenuButton onButtonClick: ");
         if (isAnimating()) return;
         if (onBoomListener != null) onBoomListener.onClicked(index, boomButton);
         if (autoHide) reboom();

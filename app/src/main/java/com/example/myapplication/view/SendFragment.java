@@ -26,12 +26,17 @@ import com.example.myapplication.Utils;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,17 +50,14 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
     private String ipStr,portStr,topicStr,userName,password;
     public static MqttClient mMqClint;
     public MqttConnectOptions mMqttConnectOptions;
-    private TextView textinfo;
     private SendMsgButton mSendMsgBtn;
 
     public SendFragment() {
         // Required empty public constructor
     }
 
-
     public static SendFragment newInstance() {
         SendFragment fragment = new SendFragment();
-
         return fragment;
     }
 
@@ -72,9 +74,7 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
     }
 
     private View inflateFragment_send(LayoutInflater inflater, ViewGroup container){
-
         View rootview = inflater.inflate(R.layout.fragment_send, container, false);
-        //textinfo = rootview.findViewById(R.id.info);
         send_content = rootview.findViewById(R.id.send_content);
         mSendMsgBtn = rootview.findViewById(R.id.bt_send);
         mSendMsgBtn.setOnSendClickListener(this);
@@ -95,7 +95,6 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
             topicStr = (String)Utils.get(mContext,EditActivity.TOPIC_NAME,EditActivity.DEFAULT_TOPIC);
             userName = (String)Utils.get(mContext,EditActivity.USER_NAME,EditActivity.DEFAULT_USERNAME);
             password = (String)Utils.get(mContext,EditActivity.PASSWORD,EditActivity.DEFAULT_PASSWORD);
-            //textinfo.setText("地址:"+ipStr+"；端口："+portStr+"；主题："+topicStr);
 
             mMqClint = new MqttClient("tcp://"+ipStr+":"+portStr, mClintId, new MemoryPersistence());
             mMqttConnectOptions = new MqttConnectOptions();
@@ -131,11 +130,29 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
                     mMqClint.connect(mMqttConnectOptions);
                 }
             } catch (Exception e) {
-                Log.d("sgw_d", "MainActivity connect: "+e);
+                Log.d("sgw_d", "SendFragment connect: "+e);
                 e.printStackTrace();
             }
         }).start();
     }
+
+
+    /**
+     * 定时检查mqtt是否连接
+     */
+    private void startReconnect() {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!mMqClint.isConnected()) {
+                    connect();
+                }
+            }
+        }, 0, 10 * 1000, TimeUnit.MILLISECONDS);
+    }
+
 
     @Override
     public void onResume() {
@@ -164,7 +181,7 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             if(msg.what == 2){
-                Log.d("sgw_d", "MainActivity handleMessage: what == 2");
+                Log.d("sgw_d", "SendFragment handleMessage: what == 2");
                 Toast.makeText(mContext, "发布消息回调成功", Toast.LENGTH_SHORT).show();
             }
         }
@@ -188,6 +205,20 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
 //
 //    }
 
+    public boolean publishMessage(){
+                MqttTopic topic = mMqClint.getTopic(topicStr);
+                MqttMessage message = new MqttMessage();
+                message.setPayload(send_content.getText().toString().getBytes());
+                try {
+                    MqttDeliveryToken publish = topic.publish(message);
+                    MqttWireMessage response = publish.getResponse();
+                } catch (MqttException e) {
+                    Log.d("sgw_d", "MainActivity onClick: bt_send = "+e);
+                    return false;
+                }
+        return true;
+    }
+
     private boolean validateComment() {
         if (TextUtils.isEmpty(send_content.getText())) {
             Toast.makeText(mContext, "请输入内容", Toast.LENGTH_SHORT).show();
@@ -201,8 +232,14 @@ public class SendFragment extends Fragment implements SendMsgButton.OnSendClickL
     public void onSendClickListener(View v) {
         if (validateComment()) {
             //Toast.makeText(mContext,send_content.getText(),SendMsgButton.RESET_STATE_DELAY_MILLIS).show();
-            send_content.setText(null);
-            mSendMsgBtn.setCurrentState(SendMsgButton.STATE_DONE);
+            if (mMqClint.isConnected()){
+                publishMessage();
+                send_content.setText(null);
+                mSendMsgBtn.setCurrentState(SendMsgButton.STATE_DONE);
+            }else {
+                Toast.makeText(mContext, "链接失败!请检查网络是否连接;ip,密码等是否正确.", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 }
