@@ -2,6 +2,7 @@ package com.example.myapplication.view;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,7 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-//import cn.pedant.SweetAlert.SweetAlertDialog;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -274,13 +276,45 @@ public class SubFragment extends Fragment implements View.OnClickListener{
     }
 
     private boolean clearOrNot(){
-//        new SweetAlertDialog(mContext, SweetAlertDialog.WARNING_TYPE)
-//                .setTitleText("Are you sure?")
-//                .setContentText("Won't be able to recover this file!")
-//                .setConfirmText("Yes,delete it!")
-//                .show();
+        new SweetAlertDialog(mContext, SweetAlertDialog.WARNING_TYPE)
+                .setTitleText("Are you sure?")
+                .setContentText("Won't be able to recover this file!")
+                .setConfirmText("Yes,delete it!")
+                .show();
         return false;
     }
+
+
+    private void showNormalDialog(){
+        /* @setIcon 设置对话框图标
+         * @setTitle 设置对话框标题
+         * @setMessage 设置对话框消息提示
+         * setXXX方法返回Dialog对象，因此可以链式设置属性
+         */
+        final AlertDialog.Builder normalDialog =
+                new AlertDialog.Builder(mContext);
+        //normalDialog.setIcon(R.drawable.icon_dialog);
+        normalDialog.setTitle("删除记录！");
+        normalDialog.setMessage("您确定要删除历史记录吗?");
+        normalDialog.setPositiveButton("确定",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //...To-do
+                        clearData(topicStr);
+                    }
+                });
+        normalDialog.setNegativeButton("关闭",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //...To-do
+                    }
+                });
+        // 显示
+        normalDialog.show();
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -296,8 +330,8 @@ public class SubFragment extends Fragment implements View.OnClickListener{
                 }
                 break;
             case R.id.bt_clear:
-                clearOrNot();
-                clearData(topicStr);
+                showNormalDialog();
+
                 break;
         }
     }
