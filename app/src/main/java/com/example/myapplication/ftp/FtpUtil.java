@@ -1,11 +1,16 @@
 package com.example.myapplication.ftp;
 
 
+import android.util.Log;
+
+import com.example.myapplication.Utils;
+
 import java.io.*;
 import java.net.SocketException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -24,8 +29,7 @@ public class FtpUtil {
      * @param ftpPort     FTP端口 默认为21
      * @return
      */
-    public static FTPClient getFTPClient(String ftpHost, String ftpUserName,
-                                         String ftpPassword, int ftpPort) {
+    public static FTPClient getFTPClient(String ftpHost, String ftpUserName, String ftpPassword, int ftpPort) {
         FTPClient ftpClient = new FTPClient();
         try {
             ftpClient = new FTPClient();
@@ -33,9 +37,10 @@ public class FtpUtil {
             ftpClient.login(ftpUserName, ftpPassword);// 登陆FTP服务器
             if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
                 ftpClient.disconnect();
-                System.out.println("未连接到FTP，用户名或密码错误。");
+                Log.d("sgw_d", "未连接到FTP，用户名或密码错误。");
+                //System.out.println("未连接到FTP，用户名或密码错误。");
             } else {
-                System.out.println("FTP connection success");
+                Log.d("sgw_d", "FTP connection success");
             }
         } catch (SocketException e) {
             e.printStackTrace();
@@ -45,6 +50,7 @@ public class FtpUtil {
         }
         return ftpClient;
     }
+
     /*
      * 从FTP服务器获取文件
      *
@@ -54,8 +60,7 @@ public class FtpUtil {
      * @param ftpPort FTP端口
      * @param ftpPath FTP服务器中文件所在路径 格式： /ftptest/aa.pdf
      */
-    public byte[] getFtpFileBytes(String ftpHost, String ftpUserName,
-                                  String ftpPassword, int ftpPort, String ftpPath) {
+    public byte[] getFtpFileBytes(String ftpHost, String ftpUserName, String ftpPassword, int ftpPort, String ftpPath) {
         FTPClient ftpClient = null;
         try {
             ftpClient = getFTPClient(ftpHost, ftpUserName, ftpPassword, ftpPort);
@@ -68,7 +73,7 @@ public class FtpUtil {
              */
             ftpClient.enterLocalPassiveMode();
             InputStream inputStream = ftpClient.retrieveFileStream(ftpPath);
-            if(null == inputStream) {
+            if (null == inputStream) {
                 System.out.println("没有找到" + ftpPath + "文件");
             }
             byte[] bytes = IOUtils.toByteArray(inputStream);
@@ -96,9 +101,8 @@ public class FtpUtil {
      * @param localPath 下载到本地的位置 格式：H:/download
      * @param fileName 文件名称
      */
-    public void downloadFtpFile(String ftpHost, String ftpUserName,
-                                String ftpPassword, int ftpPort, String ftpPath, String localPath,
-                                String fileName) {
+    public void downloadFtpFile(String ftpHost, String ftpUserName, String ftpPassword,
+                                int ftpPort, String ftpPath, String localPath, String fileName) {
         FTPClient ftpClient = null;
         try {
             ftpClient = getFTPClient(ftpHost, ftpUserName, ftpPassword, ftpPort);
@@ -107,20 +111,36 @@ public class FtpUtil {
             ftpClient.enterLocalPassiveMode();
             ftpClient.changeWorkingDirectory(ftpPath);
 
+            FTPFile[] ftpFiles = ftpClient.listFiles();
+
+//            for (FTPFile ftpFile: ftpFiles){
+//
+//                Log.d("sgw_d", "FtpUtil downloadFtpFile: ftpFile.getName = "+ftpFile.getName());
+//            }
+
+
+            Log.d("sgw_d", "FtpUtil downloadFtpFile: ftpPath = " + ftpPath);
+
+            File localFileDir = new File(localPath);
+            if (!localFileDir.exists()){
+                localFileDir.mkdir();
+            }
+
             File localFile = new File(localPath + File.separatorChar + fileName);
             OutputStream os = new FileOutputStream(localFile);
             ftpClient.retrieveFile(fileName, os);
             os.close();
             ftpClient.logout();
+            Log.d("sgw_d", "FtpUtil downloadFtpFile: end");
+        } catch (FileNotFoundException e) {
+            Log.d("sgw_d", "downloadFtpFile 没有找到:" + e);
 
-        }catch (FileNotFoundException e) {
-            System.out.println("没有找到" + fileName + "文件");
 //            throw new BaseException("FF1C1807", fileName);
         } catch (SocketException e) {
-            System.out.println("连接FTP失败.");
+            Log.d("sgw_d", "连接FTP失败.");
 //            throw new BaseException("FF1C1808");
         } catch (IOException e) {
-            System.out.println("文件读取错误。");
+            Log.d("sgw_d", "文件读取错误。");
 //            throw new BaseException("FF1C1809");
         }
 
@@ -128,18 +148,17 @@ public class FtpUtil {
 
     /**
      * Description: 向FTP服务器上传文件
-     * @param ftpHost FTP服务器hostname
+     *
+     * @param ftpHost     FTP服务器hostname
      * @param ftpUserName 账号
      * @param ftpPassword 密码
-     * @param ftpPort 端口
-     * @param ftpPath  FTP服务器中文件所在路径 格式： ftptest/aa
-     * @param fileName ftp文件名称
-     * @param input 文件流
+     * @param ftpPort     端口
+     * @param ftpPath     FTP服务器中文件所在路径 格式： ftptest/aa
+     * @param fileName    ftp文件名称
+     * @param input       文件流
      * @return 成功返回true，否则返回false
      */
-    public boolean uploadFile(String ftpHost, String ftpUserName,
-                              String ftpPassword, int ftpPort, String ftpPath,
-                              String fileName,InputStream input) {
+    public boolean uploadFile(String ftpHost, String ftpUserName, String ftpPassword, int ftpPort, String ftpPath, String fileName, InputStream input) {
         boolean success = false;
         FTPClient ftpClient = null;
         try {
@@ -169,6 +188,35 @@ public class FtpUtil {
             }
         }
         return success;
+    }
+
+    //public static String testFile = "ftp://d:d@dygodj8.com:12311/[电影天堂www.dy2018.com]犬之岛HD国英双语中字.mp4";
+
+
+    public static boolean startDownloadFtpFile(String ftpFileName) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String ftpHost = "10.119.119.67";
+                String ftpUserName = "testftp";
+                String ftpPassword = "1234";
+                int ftpPort = 21;
+                String ftpPath = "/home/testftp/test";
+                String filename = ftpFileName;
+                String sdPath = Utils.getSDPath() + "/sim";
+                String localFilePath = sdPath + "/" + filename;
+                File localFile = new File(localFilePath);
+                Log.d("sgw_d", "FtpUtil run: sdPath = "+sdPath);
+                Log.d("sgw_d", "FtpUtil run: localFilePath ="+localFilePath);
+                if (localFile.exists()) {
+                    Log.d("sgw_d", "FtpUtil run: 文件已经存在无需下载");
+                }else {
+                    new FtpUtil().downloadFtpFile(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath, sdPath, filename);
+                }
+
+            }
+        }).start();
+        return true;
     }
 
     public static void main(String[] args) throws UnsupportedEncodingException {

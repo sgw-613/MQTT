@@ -11,27 +11,32 @@
 
     <application
         android:allowBackup="true"
-        android:src="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:src="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
+        <activity android:name=".Play_Movie_Activity">
+            <intent-filter>
+                <action android:name="com.sim.activity.playmove" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <provider
             android:name=".database.HistoryProvider"
             android:authorities="com.sim.providers.historyprovider"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true" />
 
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication.NoActionBar">
-
-        </activity>
+            android:theme="@style/Theme.MyApplication.NoActionBar"></activity>
         <activity
             android:name=".EditActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication.NoActionBar"></activity>
+            android:theme="@style/Theme.MyApplication.NoActionBar" />
         <activity android:name=".WelcomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

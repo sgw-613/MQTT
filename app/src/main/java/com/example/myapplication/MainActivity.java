@@ -1,13 +1,18 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -35,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView nainInfo;
     private String ipStr,portStr,topicStr,userName,password;
     private BoomMenuButton bmb;
-
+    private static final int REQUEST_CODE = 1024;
     private Context mContext;
 
     @Override
@@ -43,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mContext = this;
+
+        requestPermission();
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -156,40 +163,19 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onMenuOpened(int featureId, Menu menu) {
-//        Log.d("sgw_d", "MainActivity onMenuOpened: ");
-//        return super.onMenuOpened(featureId, menu);
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        Log.d("sgw_d", "MainActivity onOptionsItemSelected: ");
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//        if (id == R.id.action_edit) {
-//            Intent it= new Intent(MainActivity.this,EditActivity.class);
-//            startActivityForResult(it,1001);
-//            return true;
-//        }
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            String hint = getResources().getString(R.string.app_name)+",版本号："+Utils.getVerName(this);
-//            Toast.makeText(MainActivity.this, hint, Toast.LENGTH_SHORT).show();
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
+    private void requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // 先判断有没有权限
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                //writeFile();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+            }
+        } else {
+            //writeFile();
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

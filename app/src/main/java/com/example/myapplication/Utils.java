@@ -21,6 +21,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -33,6 +34,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
@@ -110,5 +112,19 @@ public class Utils {
     }
 
 
+    public static String getSDPath() {
+        File sdDir = null;
+        boolean sdCardExist = Environment.getExternalStorageState().equals(
+                android.os.Environment.MEDIA_MOUNTED); // 判断sd卡是否存在
+        if (sdCardExist) {
+            //sdDir = Environment.getExternalStorageDirectory();// 获取跟目录
+            sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        }
+        return sdDir.toString();
+    }
+
+    public static String getLocalFilePath(String fileName) {
+        return Utils.getSDPath() + File.separator + "sim" + File.separator + fileName;
+    }
 
 }

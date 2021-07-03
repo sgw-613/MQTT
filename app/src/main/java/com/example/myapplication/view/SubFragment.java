@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -23,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +34,8 @@ import com.example.myapplication.database.HistoryDB;
 import com.example.myapplication.database.HistoryProvider;
 import com.example.myapplication.R;
 import com.example.myapplication.Utils;
+import com.example.myapplication.ftp.FtpUtil;
+import com.nightonke.boommenu.Util;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -41,6 +45,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.io.File;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -109,8 +114,10 @@ public class SubFragment extends Fragment implements View.OnClickListener{
 
         Button mBtSub = rootview.findViewById(R.id.bt_sub);
         Button mClear = rootview.findViewById(R.id.bt_clear);
+        //Button ftp_btn = rootview.findViewById(R.id.bt_ftp);
         mClear.setOnClickListener(this);
         mBtSub.setOnClickListener(this);
+        //ftp_btn.setOnClickListener(this);
         sub_content_recyclerView = rootview.findViewById(R.id.sub_content_recycler);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
@@ -238,11 +245,12 @@ public class SubFragment extends Fragment implements View.OnClickListener{
     private void inflateRecycler(Cursor cursor) {
         try {
             Log.d("sgw_d", "SubFragment inflateRecycler: ");
-            CursorRecyclerViewAdapter<LineViewHolder> adapter =
-                    new CursorRecyclerViewAdapter<>(getActivity(), cursor, R.layout.sub_content_line,
-                            new int[]{1}, new String[]{ "sub_content"},
-                            LineViewHolder.class.getConstructor(SubFragment.class,View.class));
-
+            CursorRecyclerViewAdapter adapter =
+                    new CursorRecyclerViewAdapter(getActivity(), cursor, R.layout.sub_content_line,
+                            new int[]{1}, new String[]{ "sub_content","recycler_image"},
+                            null);
+//            CursorRecyclerViewAdapter.LineViewHolder.class.getConstructor(SubFragment.class, View.class)
+            Log.d("sgw_d", "SubFragment inflateRecycler:setAdapter ");
             sub_content_recyclerView.setAdapter(adapter);
         }catch (Exception e){
             Log.d("sgw_d", "SubFragment inflateRecycler: Exception = "+e);
@@ -331,9 +339,26 @@ public class SubFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.bt_clear:
                 showNormalDialog();
-
                 break;
         }
+    }
+
+    public void getFtpFile(){
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String ftpHost = "10.119.119.67";
+                String ftpUserName = "testftp";
+                String ftpPassword = "1234";
+                int ftpPort = 21;
+                String ftpPath = "/home/testftp/test/1.txt";
+                byte[] file_cont = new FtpUtil().getFtpFileBytes(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath);
+                String file_s = new String(file_cont);
+                System.out.println(file_s);
+                Log.d("sgw_d", "SubFragment Start_Ftp: file_s ="+file_s);
+            }
+        }).start();
     }
 
 
@@ -390,13 +415,17 @@ public class SubFragment extends Fragment implements View.OnClickListener{
     }
 
 
-    public class LineViewHolder extends RecyclerView.ViewHolder {
-        TextView sub_content;
-        public LineViewHolder(View itemView) {
-            super(itemView);
-            sub_content = itemView.findViewById(R.id.sub_content);
-        }
-    }
+//    public class LineViewHolder extends RecyclerView.ViewHolder {
+//        TextView sub_content;
+//        ImageView recycler_image;
+//
+//        public LineViewHolder(View itemView) {
+//            super(itemView);
+//            sub_content = itemView.findViewById(R.id.sub_content);
+//            recycler_image = itemView.findViewById(R.id.recycler_image);
+//
+//        }
+//    }
 
 
 
