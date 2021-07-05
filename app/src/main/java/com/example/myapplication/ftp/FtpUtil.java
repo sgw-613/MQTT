@@ -1,9 +1,25 @@
 package com.example.myapplication.ftp;
 
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.RemoteViews;
+import android.widget.Toast;
 
+import androidx.core.app.NotificationCompat;
+
+import com.example.myapplication.R;
 import com.example.myapplication.Utils;
+import com.example.myapplication.view.DownloadProgressDialog;
+import com.example.myapplication.view.NotificationUtils;
 
 import java.io.*;
 import java.net.SocketException;
@@ -18,6 +34,31 @@ import org.apache.commons.net.ftp.FTPReply;
 //import cn.com.jit.cloud.common.exception.BaseException;
 
 public class FtpUtil {
+
+    public static final int SUCCESS_DOWNLOAD = 0;
+    public static final int CANCELLED_DOWNLOAD = 1;
+    public static final int FILE_NOT_EXIST = 2;
+    public static final int DOWNLOAD_FILE_ERROR = 3;
+    public static final int CONNECT_FTP_ERROR = 4;
+    private Context mContext;
+
+    public DownLoadProgressListener downLoadProgressListener;
+
+    private boolean cancelled = false;
+
+    public FtpUtil(Context context) {
+        this.mContext = context;
+    }
+
+    public FtpUtil() {
+
+    }
+
+    public FtpUtil setDownLoadProgressListener(DownLoadProgressListener downLoadProgressListener) {
+        this.downLoadProgressListener = downLoadProgressListener;
+        return this;
+    }
+
     //private static Logger logger = LoggerFactory.getLogger(FtpUtil.class);
 
     /**
@@ -39,14 +80,17 @@ public class FtpUtil {
                 ftpClient.disconnect();
                 Log.d("sgw_d", "未连接到FTP，用户名或密码错误。");
                 //System.out.println("未连接到FTP，用户名或密码错误。");
+                return null;
             } else {
                 Log.d("sgw_d", "FTP connection success");
             }
         } catch (SocketException e) {
             e.printStackTrace();
-            System.out.println("FTP的IP地址可能错误，请正确配置。");
+            Log.d("sgw_d","FTP的IP地址可能错误，请正确配置。");
+            return null;
         } catch (IOException e) {
-            System.out.println("FTP的IP地址可能错误，请正确配置。");
+            Log.d("sgw_d","FTP的IP地址可能错误，请正确配置。");
+            return null;
         }
         return ftpClient;
     }
@@ -101,23 +145,40 @@ public class FtpUtil {
      * @param localPath 下载到本地的位置 格式：H:/download
      * @param fileName 文件名称
      */
-    public void downloadFtpFile(String ftpHost, String ftpUserName, String ftpPassword,
+    public int downloadFtpFile(String ftpHost, String ftpUserName, String ftpPassword,
                                 int ftpPort, String ftpPath, String localPath, String fileName) {
         FTPClient ftpClient = null;
+        Long fileSize = -1L;
         try {
+            Log.d("sgw_d", "FtpUtil downloadFtpFile: getFTPClient");
             ftpClient = getFTPClient(ftpHost, ftpUserName, ftpPassword, ftpPort);
+            if (ftpClient == null){
+                //连接服务器错误
+                return CONNECT_FTP_ERROR;
+            }
+            Log.d("sgw_d", "FtpUtil downloadFtpFile: getFTPClient end");
+
             //ftpClient.setControlEncoding("UTF-8"); // 中文支持
             ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE); // 使用二进制保存方式
             ftpClient.enterLocalPassiveMode();
+
+            Log.d("sgw_d", "FtpUtil downloadFtpFile: ftpPath = "+ftpPath);
+            Log.d("sgw_d", "FtpUtil downloadFtpFile: fileName = "+fileName);
+
             ftpClient.changeWorkingDirectory(ftpPath);
 
-            FTPFile[] ftpFiles = ftpClient.listFiles();
+            FTPFile[] ftpFiles = ftpClient.listFiles(fileName);
 
-//            for (FTPFile ftpFile: ftpFiles){
-//
-//                Log.d("sgw_d", "FtpUtil downloadFtpFile: ftpFile.getName = "+ftpFile.getName());
-//            }
-
+            if(null != ftpFiles && ftpFiles.length > 0)
+            {
+                //file　存在
+                fileSize = ftpFiles[0].getSize();
+            }else {
+                return FILE_NOT_EXIST; //ftp服务器不存在file返回1
+            }
+            for (FTPFile ftpFile: ftpFiles){
+                Log.d("sgw_d", "FtpUtil downloadFtpFile: ftpFile.getName = "+ftpFile.getName());
+            }
 
             Log.d("sgw_d", "FtpUtil downloadFtpFile: ftpPath = " + ftpPath);
 
@@ -143,7 +204,148 @@ public class FtpUtil {
             Log.d("sgw_d", "文件读取错误。");
 //            throw new BaseException("FF1C1809");
         }
+        return SUCCESS_DOWNLOAD; //成功返回0
+    }
 
+
+
+//    protected void setNotification(int progress,Context context) {
+//        if (this==null){
+//            return;
+//        }
+//        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.remote_notification_view);
+//        remoteViews.setTextViewText(R.id.tvTitle, "正在下载：");
+//        remoteViews.setProgressBar(R.id.pb, 100, progress, false);
+//        NotificationUtils notificationUtils = new NotificationUtils(context);
+//        NotificationManager manager = notificationUtils.getManager();
+//        Notification notification = notificationUtils
+//                .setContent(remoteViews)
+//                .setFlags(Notification.FLAG_AUTO_CANCEL)
+//                .setOnlyAlertOnce(true)
+//                .getNotification("来了一条消息", "下载apk", R.mipmap.ic_launcher);
+//        //下载成功或者失败
+//        if (progress == 100 || progress == -1) {
+//            notificationUtils.clearNotification();
+//        } else {
+//            manager.notify(1, notification);
+//        }
+//    }
+
+
+    /*
+     * 从FTP服务器下载文件
+     *
+     * @param ftpHost FTP IP地址
+     * @param ftpUserName FTP 用户名
+     * @param ftpPassword FTP用户名密码
+     * @param ftpPort FTP端口
+     * @param ftpPath FTP服务器中文件所在路径 格式： ftptest/aa
+     * @param localPath 下载到本地的位置 格式：H:/download
+     * @param fileName 文件名称
+     */
+    public int downloadFtpFileProgress(String ftpHost, String ftpUserName, String ftpPassword,
+                                int ftpPort, String ftpPath, String localPath, String fileName,DownloadProgressDialog progressDialog) {
+        FTPClient ftpClient = null;
+
+        long fileSize = 0;
+        long step = 0;
+        long process = 0;
+        long currentSize = 0;
+
+
+        try {
+            ftpClient = getFTPClient(ftpHost, ftpUserName, ftpPassword, ftpPort);
+            //ftpClient.setControlEncoding("UTF-8"); // 中文支持
+            ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE); // 使用二进制保存方式
+            ftpClient.enterLocalPassiveMode();
+            ftpClient.changeWorkingDirectory(ftpPath);
+
+            FTPFile[] ftpFiles = ftpClient.listFiles(fileName);
+            if(null != ftpFiles && ftpFiles.length > 0)
+            {
+                //file　存在
+                fileSize = ftpFiles[0].getSize();
+            }else {
+                Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: ftp服务器不存在file返回1");
+                return FILE_NOT_EXIST; //ftp服务器不存在file返回1
+            }
+
+           step = fileSize / 100;
+
+            Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: ftpPath = " + ftpPath);
+
+            File localFileDir = new File(localPath);
+            if (!localFileDir.exists()){
+                localFileDir.mkdir();
+            }
+
+            File localFile = new File(localPath + File.separatorChar + fileName);
+            OutputStream os = new FileOutputStream(localFile);
+            InputStream inputStream = ftpClient.retrieveFileStream(fileName);
+
+//            NotificationChannel channel;
+//            String channelID = "1";
+//            String channelName = "channel_name";
+//            NotificationManager manager;
+//            Notification.Builder builder;
+//            channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
+//            manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+//            manager.createNotificationChannel(channel);
+//            builder = new Notification.Builder(mContext);
+//            builder.setContentText("123456");
+//            builder.setContentTitle("123");
+//            builder.setSmallIcon(R.drawable.ic_launcher_background);
+//            builder.setOnlyAlertOnce(true);
+//            //创建通知时指定channelID
+//            builder.setChannelId(channelID);
+//            manager.notify(1, builder.build());
+            progressDialog.setMax((int) fileSize);
+
+            byte[] data = new byte[1024];
+            int count = 0;
+            while ((count = inputStream.read(data)) != -1) {
+                // allow canceling with back button
+                if (isCancelled()) {
+                    inputStream.close();
+                    return CANCELLED_DOWNLOAD;
+                }
+                currentSize += count;
+                process = currentSize / step;
+                if (process % 5 == 0) {
+                    //downLoadProgressListener.onDownLoadProgress(fileSize, process);
+//                    builder.setProgress((int)fileSize, (int)process, true);
+//                    builder.setContentText("下载"+process+"%");
+//                    manager.notify(1, builder.build());
+
+                        progressDialog.setProgress((int) currentSize);
+
+
+
+                    Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: process = "+process);
+                }
+
+                os.write(data, 0, count);
+            }
+
+
+            //progressDialog.hide();
+            os.close();
+            ftpClient.logout();
+            Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: end");
+        } catch (Exception e) {
+            Log.d("sgw_d", "downloadFtpFileProgress 没有找到:" + e);
+            return DOWNLOAD_FILE_ERROR;
+        }
+        Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: end");
+        return SUCCESS_DOWNLOAD;
+    }
+
+    public boolean isCancelled(){
+        return cancelled;
+    }
+
+    public void setCancelled(boolean b){
+        cancelled = b;
     }
 
     /**
@@ -193,15 +395,40 @@ public class FtpUtil {
     //public static String testFile = "ftp://d:d@dygodj8.com:12311/[电影天堂www.dy2018.com]犬之岛HD国英双语中字.mp4";
 
 
-    public static boolean startDownloadFtpFile(String ftpFileName) {
+    public static int startDownloadFtpFile(Context context, String ftpFileName,DownloadProgressDialog progressDialog, DownloadCallback callback) {
+        final int[] status = {100};
+
+//        DownloadProgressDialog progressDialog = new DownloadProgressDialog(context);
+//        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+//        // 设置ProgressDialog 标题
+//        progressDialog.setTitle("下载提示");
+//        // 设置ProgressDialog 提示信息
+//        progressDialog.setMessage("当前下载进度:");
+//        // 设置ProgressDialog 标题图标
+//        //progressDialog.setIcon(R.drawable.a);
+//        // 设置ProgressDialog 进度条进度
+//        // 设置ProgressDialog 的进度条是否不明确
+//        progressDialog.setIndeterminate(false);
+//        // 设置ProgressDialog 是否可以按退回按键取消
+//        progressDialog.setCancelable(true);
+//        progressDialog.show();
+
+
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 String ftpHost = "10.119.119.67";
                 String ftpUserName = "testftp";
                 String ftpPassword = "1234";
-                int ftpPort = 21;
                 String ftpPath = "/home/testftp/test";
+
+//                String ftpHost = "192.168.160.12";
+//                String ftpUserName = "sim.zhujing";
+//                String ftpPassword = "iopkl";
+//                String ftpPath = "/home/disk/code/jetson/data";
+
+                int ftpPort = 21;
                 String filename = ftpFileName;
                 String sdPath = Utils.getSDPath() + "/sim";
                 String localFilePath = sdPath + "/" + filename;
@@ -211,13 +438,42 @@ public class FtpUtil {
                 if (localFile.exists()) {
                     Log.d("sgw_d", "FtpUtil run: 文件已经存在无需下载");
                 }else {
-                    new FtpUtil().downloadFtpFile(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath, sdPath, filename);
+                    Log.d("sgw_d", "FtpUtil run: downloadFtpFile");
+                    int status = new FtpUtil(context).downloadFtpFileProgress(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath, sdPath, filename, progressDialog);
+                    callback.updateDownloadImage(status);
+                }
+            }
+        }).start();
+        return status[0];
+    }
+
+
+    public static boolean startDownloadFtpFileProgress(String ftpFileName, DownLoadProgressListener listener) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String ftpHost = "10.119.119.67";
+                String ftpUserName = "testftp";
+                String ftpPassword = "1234";
+                String ftpPath = "/home/testftp/test";
+                int ftpPort = 21;
+                String filename = ftpFileName;
+                String sdPath = Utils.getSDPath() + "/sim";
+                String localFilePath = sdPath + "/" + filename;
+                File localFile = new File(localFilePath);
+                Log.d("sgw_d", "FtpUtil run: sdPath = "+sdPath);
+                Log.d("sgw_d", "FtpUtil run: localFilePath ="+localFilePath);
+                if (localFile.exists()) {
+                    Log.d("sgw_d", "FtpUtil run: 文件已经存在无需下载");
+                }else {
+                    new FtpUtil().setDownLoadProgressListener(listener).downloadFtpFileProgress(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath, sdPath, filename,null);
                 }
 
             }
         }).start();
         return true;
     }
+
 
     public static void main(String[] args) throws UnsupportedEncodingException {
         String ftpHost = "10.119.119.67";
@@ -232,6 +488,4 @@ public class FtpUtil {
     }
 
 }
-
-
 

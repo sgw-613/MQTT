@@ -246,7 +246,7 @@ public class SubFragment extends Fragment implements View.OnClickListener{
         try {
             Log.d("sgw_d", "SubFragment inflateRecycler: ");
             CursorRecyclerViewAdapter adapter =
-                    new CursorRecyclerViewAdapter(getActivity(), cursor, R.layout.sub_content_line,
+                    new CursorRecyclerViewAdapter(getActivity(),getActivity(), cursor, R.layout.sub_content_line,
                             new int[]{1}, new String[]{ "sub_content","recycler_image"},
                             null);
 //            CursorRecyclerViewAdapter.LineViewHolder.class.getConstructor(SubFragment.class, View.class)
@@ -343,23 +343,23 @@ public class SubFragment extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void getFtpFile(){
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String ftpHost = "10.119.119.67";
-                String ftpUserName = "testftp";
-                String ftpPassword = "1234";
-                int ftpPort = 21;
-                String ftpPath = "/home/testftp/test/1.txt";
-                byte[] file_cont = new FtpUtil().getFtpFileBytes(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath);
-                String file_s = new String(file_cont);
-                System.out.println(file_s);
-                Log.d("sgw_d", "SubFragment Start_Ftp: file_s ="+file_s);
-            }
-        }).start();
-    }
+//    public void getFtpFile(){
+//
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                String ftpHost = "10.119.119.67";
+//                String ftpUserName = "testftp";
+//                String ftpPassword = "1234";
+//                int ftpPort = 21;
+//                String ftpPath = "/home/testftp/test/1.txt";
+//                byte[] file_cont = new FtpUtil().getFtpFileBytes(ftpHost, ftpUserName, ftpPassword, ftpPort, ftpPath);
+//                String file_s = new String(file_cont);
+//                System.out.println(file_s);
+//                Log.d("sgw_d", "SubFragment Start_Ftp: file_s ="+file_s);
+//            }
+//        }).start();
+//    }
 
 
     class MyContentObserver extends ContentObserver {

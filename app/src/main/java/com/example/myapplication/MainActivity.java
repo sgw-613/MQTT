@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,6 +24,9 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.myapplication.database.HistoryDB;
+import com.example.myapplication.database.HistoryProvider;
 import com.example.myapplication.view.SendFragment;
 import com.example.myapplication.view.SubFragment;
 import com.google.android.material.tabs.TabLayout;
@@ -43,6 +47,18 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 1024;
     private Context mContext;
 
+    public void insertData(String data) {
+
+        Log.d("sgw_d", "SubFragment insertData: ");
+        ContentValues values = new ContentValues();
+
+        // 向该对象中插入键值对
+        values.put(HistoryDB.SUB_CONTENT, data);
+
+        mContext.getContentResolver().insert(HistoryProvider.SUBCONTENTS_URI, values);
+        mContext.getContentResolver().notifyChange(HistoryProvider.SUBCONTENTS_URI,null);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
         bmb = (BoomMenuButton) findViewById(R.id.bmb);
         assert bmb != null;
         bmb.setButtonEnum(ButtonEnum.Ham);
-
         int pieceNumber = bmb.getPiecePlaceEnum().pieceNumber();
         Log.d("sgw_d", "MainActivity onCreate: pieceNumber = "+pieceNumber);
         for (int i = 0; i < pieceNumber; i++){
@@ -171,6 +186,9 @@ public class MainActivity extends AppCompatActivity {
                 //writeFile();
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+
+                insertData("2021759638_18_test.avi");
+                insertData("2021759652_25_test.avi");
             }
         } else {
             //writeFile();
