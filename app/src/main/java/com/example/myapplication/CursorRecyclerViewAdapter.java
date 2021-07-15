@@ -160,8 +160,8 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 			textView.setBackgroundColor(Color.parseColor("#F5F5F5"));
 		}
 
-		if (content_s.endsWith(".mp4") || content_s.endsWith(".avi")){
-			Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: .mp4 || .avi");
+		if (content_s.contains(".avi") || content_s.contains(".avi")){
+			Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: .avi || .avi");
 			String localFilePath = Utils.getSDPath() + File.separator + "sim" + File.separator + content_s;
 			File localFile = new File(localFilePath);
 			if (localFile.exists()){
@@ -178,25 +178,39 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 			imageView.setVisibility(View.INVISIBLE);
 		}
 
+		String file_Name = cursorValues.get(position).get(columnIndexs[0]).toString();
+		Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: file_Name="+file_Name);
+		String fileName;
+		if (file_Name.contains(".avi")){
+			fileName = file_Name.substring(0,file_Name.lastIndexOf(".avi"))+".avi";
 
-		viewHolder.recycler_item.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				String fileName = cursorValues.get(position).get(columnIndexs[0]).toString();
-				String localFilePath = Utils.getLocalFilePath(fileName);
-				File localFile = new File(localFilePath);
-				if (localFile.exists()){
-					//开始播放
-					Log.d("sgw_d", "CursorRecyclerViewAdapter onClick: " + localFile.getAbsolutePath());
-					Intent intent = new Intent("com.sim.activity.playmove");
-					intent.putExtra("filename", fileName);
-					v.getContext().startActivity(intent);
-				}else {
-					showNormalDialog(v,position,imageView,fileName);
+		}else{
+			fileName = file_Name;
+		}
+
+
+		Log.d("sgw_d", "CursorRecyclerViewAdapter onBindViewHolder: fileName="+fileName);
+		if (fileName.contains(".avi") || fileName.endsWith(".avi")){
+			viewHolder.recycler_item.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Log.d("sgw_d", "CursorRecyclerViewAdapter onClick: "+fileName);
+					String localFilePath = Utils.getLocalFilePath(fileName);
+					File localFile = new File(localFilePath);
+					if (localFile.exists()){
+						//开始播放
+						Log.d("sgw_d", "CursorRecyclerViewAdapter onClick: " + localFile.getAbsolutePath());
+						Intent intent = new Intent("com.sim.activity.playmove");
+						intent.putExtra("filename", fileName);
+						v.getContext().startActivity(intent);
+					}else {
+						showNormalDialog(v,position,imageView,fileName);
+					}
+
 				}
+			});
+		}
 
-			}
-		});
 
 	}
 
@@ -224,18 +238,15 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 				Intent intent = new Intent("com.sim.downloadfile");
 				intent.putExtra("status", status);
 				context.sendBroadcast(intent);
-				if (status == FtpUtil.SUCCESS_DOWNLOAD){
-					imageView.setBackground(context.getResources().getDrawable(R.drawable.play));
-					imageView.setVisibility(View.VISIBLE);
 
-					activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							progressDialog.hide();
-						}
-					});
-
-				}
+				activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						imageView.setBackground(context.getResources().getDrawable(R.drawable.play));
+						imageView.setVisibility(View.VISIBLE);
+						progressDialog.hide();
+					}
+				});
 			}
 		});
 	}
@@ -256,7 +267,11 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						//...To-do
-						startDownload(v,position,imageView,fileName);
+
+						String file_name = fileName.substring(0,fileName.lastIndexOf(".avi")) + ".avi";
+						Log.d("sgw_d", "CursorRecyclerViewAdapter onClick: file_name="+file_name);
+
+						startDownload(v,position,imageView,file_name);
 					}
 				});
 		normalDialog.setNegativeButton("取消",

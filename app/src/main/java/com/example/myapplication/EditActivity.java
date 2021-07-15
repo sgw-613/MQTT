@@ -3,8 +3,10 @@ package com.example.myapplication;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +15,8 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+import java.util.HashMap;
 
 
 public class EditActivity extends AppCompatActivity implements View.OnClickListener{
@@ -47,11 +51,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     public final static String FTP_USER_KEY = "FTP_USER_NAME";
     public final static String FTP_PASSWORD_KEY = "FTP_PASSWORD";
 
-    public final static String FTP_DEFAULT_IP = "192.168.160.12";
-    public final static String FTP_DEFAULT_PORT = "21";
-    public final static String FTP_DEFAULT_PATH = "/home/disk/code/jetson/data";  //
-    public final static String FTP_DEFAULT_USERNAME = "sim.zhujing";
-    public final static String FTP_DEFAULT_PASSWORD = "iopkl";
+    public final static String FTP_DEFAULT_IP = "58.33.172.147";
+    public final static int FTP_DEFAULT_PORT = 21;
+    public final static String FTP_DEFAULT_PATH = "/sim";  //
+    public final static String FTP_DEFAULT_USERNAME = "admin";
+    public final static String FTP_DEFAULT_PASSWORD = "simftp";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,12 +99,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         setPasswordVisible();
 
         String ftp_ip_str = (String)Utils.get(this,FTP_IP_KEY,FTP_DEFAULT_IP);
-        String ftp_port_str = (String)Utils.get(this,FTP_PORT_KEY,FTP_DEFAULT_PORT);
+        int ftp_port_str = (int)Utils.get(this,FTP_PORT_KEY,FTP_DEFAULT_PORT);
         String ftp_user_str = (String)Utils.get(this,FTP_USER_KEY,FTP_DEFAULT_USERNAME);
         String ftp_password_str = (String)Utils.get(this,FTP_PASSWORD_KEY,FTP_DEFAULT_PASSWORD);
         String ftp_path_str = (String)Utils.get(this,FTP_PATH_KEY,FTP_DEFAULT_PATH);
         ftp_ip.setText(ftp_ip_str);
-        ftp_port.setText(ftp_port_str);
+        ftp_port.setText(String.valueOf(ftp_port_str));
         ftp_user.setText(ftp_user_str);
         ftp_password.setText(ftp_password_str);
         ftp_path.setText(ftp_path_str);
@@ -139,23 +143,51 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.save:
-                Utils.put(this,IP_ADDRESS,ip.getText().toString());
-                Utils.put(this,IP_PORT,port.getText().toString());
-                Utils.put(this,TOPIC_NAME,topic.getText().toString());
-                Utils.put(this,USER_NAME,username.getText().toString());
-                Utils.put(this,PASSWORD,password.getText().toString());
+                Log.d("sgw_dd", "EditActivity onClick: save");
+
+                HashMap<String, Object> hashMap = new HashMap<>();
+//                hashMap.put(IP_ADDRESS, ip.getText().toString());
+
+                hashMap.put(IP_ADDRESS,ip.getText().toString());
+                hashMap.put(IP_PORT,port.getText().toString());
+                hashMap.put(TOPIC_NAME,topic.getText().toString());
+                hashMap.put(USER_NAME,username.getText().toString());
+                hashMap.put(PASSWORD,password.getText().toString());
 
                 //ftp
-                Utils.put(this,FTP_IP_KEY,ftp_ip.getText().toString());
-                Utils.put(this,FTP_PORT_KEY,ftp_port.getText().toString());
-                Utils.put(this,FTP_PATH_KEY,ftp_path.getText().toString());
-                Utils.put(this,FTP_USER_KEY,ftp_user.getText().toString());
-                Utils.put(this,FTP_PASSWORD_KEY,ftp_password.getText().toString());
+                hashMap.put(FTP_IP_KEY,ftp_ip.getText().toString());
+                hashMap.put(FTP_PORT_KEY,Integer.parseInt(ftp_port.getText().toString().trim()));
+                hashMap.put(FTP_PATH_KEY,ftp_path.getText().toString());
+                hashMap.put(FTP_USER_KEY,ftp_user.getText().toString());
+                hashMap.put(FTP_PASSWORD_KEY,ftp_password.getText().toString());
+
+                Utils.puts(this,hashMap);
+
+//                //mqtt配置
+//                Utils.put(this,IP_ADDRESS,ip.getText().toString());
+//                Utils.put(this,IP_PORT,port.getText().toString());
+//                Utils.put(this,TOPIC_NAME,topic.getText().toString());
+//                Utils.put(this,USER_NAME,username.getText().toString());
+//                Utils.put(this,PASSWORD,password.getText().toString());
+//
+//                //ftp
+//                Utils.put(this,FTP_IP_KEY,ftp_ip.getText().toString());
+//                Utils.put(this,FTP_PORT_KEY,Integer.parseInt(ftp_port.getText().toString().trim()));
+//                Utils.put(this,FTP_PATH_KEY,ftp_path.getText().toString());
+//                Utils.put(this,FTP_USER_KEY,ftp_user.getText().toString());
+//                Utils.put(this,FTP_PASSWORD_KEY,ftp_password.getText().toString());
 
                 Intent it = new Intent();
                 it.putExtra("isEdit", true);
                 setResult(1001, it);
-                finish();
+
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        //你需要跳转的地方的代码
+                        finish();
+                    }
+                }, 300); //延迟跳转
+                //finish();
                 break;
             case R.id.cancel:
                 finish();

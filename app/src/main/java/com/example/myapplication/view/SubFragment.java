@@ -3,6 +3,7 @@ package com.example.myapplication.view;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import com.example.myapplication.CursorRecyclerViewAdapter;
 import com.example.myapplication.EditActivity;
+import com.example.myapplication.MainActivity;
 import com.example.myapplication.database.HistoryDB;
 import com.example.myapplication.database.HistoryProvider;
 import com.example.myapplication.R;
@@ -73,7 +75,7 @@ public class SubFragment extends Fragment implements View.OnClickListener{
     public MqttConnectOptions mMqttConnectOptions;
 
     private Context mContext;
-
+    private Button mBtSub;
     public SubFragment() {
         // Required empty public constructor
     }
@@ -112,7 +114,7 @@ public class SubFragment extends Fragment implements View.OnClickListener{
 
         //textinfo = rootview.findViewById(R.id.info);
 
-        Button mBtSub = rootview.findViewById(R.id.bt_sub);
+        mBtSub = rootview.findViewById(R.id.bt_sub);
         Button mClear = rootview.findViewById(R.id.bt_clear);
         //Button ftp_btn = rootview.findViewById(R.id.bt_ftp);
         mClear.setOnClickListener(this);
@@ -133,7 +135,28 @@ public class SubFragment extends Fragment implements View.OnClickListener{
     public void onResume() {
         super.onResume();
         Log.d("sgw_d", "SubFragment onResume: ");
+
+        if (MainActivity.Is_Edit){
+            MainActivity activity= (MainActivity) getActivity();
+            //activity.reLoadFragView();
+            MainActivity.Is_Edit = false;
+        }
+
         initMqtt();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("sgw_d", "SubFragment onActivityResult: resultCode="+requestCode);
+        if(requestCode == 1001){
+            if(data == null)
+                return;
+            boolean isEdit = data.getBooleanExtra("isEdit",false);
+            if(isEdit){
+                //recreate();
+            }
+        }
     }
 
     @Override
@@ -158,6 +181,7 @@ public class SubFragment extends Fragment implements View.OnClickListener{
             super.handleMessage(msg);
             if(msg.what == 1){
                 Log.d("sgw_d", "SubFragment handleMessage: what == 1");
+                Log.d("sgw_d", "SubFragment handleMessage: obj = "+(String)msg.obj);
                 insertData((String)msg.obj);
                 //inflateRecycler(queryData());
                 //sub_content_recyclerView.setText((String)msg.obj);
@@ -330,8 +354,14 @@ public class SubFragment extends Fragment implements View.OnClickListener{
             case R.id.bt_sub:
                 if (mMqClint.isConnected()){
                     try {
-                        mMqClint.subscribe(topicStr,0);
-                        inflateRecycler(queryData());
+                        if (mBtSub.getText().equals("开始订阅")){
+                            mBtSub .setText("暂停订阅");
+                            mMqClint.subscribe(topicStr,0);
+                            inflateRecycler(queryData());
+                        }else if (mBtSub.getText().equals("暂停订阅")){
+                            mBtSub .setText("开始订阅");
+                            mMqClint.unsubscribe(topicStr);
+                        }
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }

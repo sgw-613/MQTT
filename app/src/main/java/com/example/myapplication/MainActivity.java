@@ -186,14 +186,13 @@ public class MainActivity extends AppCompatActivity {
                 //writeFile();
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-
-                insertData("2021759638_18_test.avi");
-                insertData("2021759652_25_test.avi");
             }
         } else {
             //writeFile();
         }
     }
+
+    public static boolean Is_Edit = false;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -203,10 +202,31 @@ public class MainActivity extends AppCompatActivity {
                 return;
             boolean isEdit = data.getBooleanExtra("isEdit",false);
             if(isEdit){
-                recreate();
+                Is_Edit = true;
+                //recreate();
             }
         }
     }
+
+//    /*重新加载布局*/
+//    public void reLoadFragView(){
+//        /*现将该fragment从fragmentList移除*/
+//        if (fragmentList.contains(dashboardFragment)){
+//            fragmentList.remove(dashboardFragment);
+//        }
+//        /*从FragmentManager中移除*/
+//        getSupportFragmentManager().beginTransaction().remove(dashboardFragment).commit();
+//
+//        /*重新创建*/
+//        dashboardFragment=new DashboardFragment();
+//        /*添加到fragmentList*/
+//        fragmentList.add(dashboardFragment);
+//
+//        /*显示*/
+//        showFragment(dashboardFragment,DASHBOARD_FRAGMENT_KEY);
+//
+//    }
+
 
     private final static String TAG = MainActivity.class.getSimpleName();
 

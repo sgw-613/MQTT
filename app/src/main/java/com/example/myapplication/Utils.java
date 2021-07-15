@@ -39,6 +39,10 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Utils {
 
@@ -71,6 +75,70 @@ public class Utils {
 
     private static final String FILE_NAME = "Eye_data";
 
+
+    public static void puts(Context context, HashMap<String,Object> hashMap) {
+        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        Iterator iter = hashMap.entrySet().iterator();        //获取key和value的set
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();        //把hashmap转成Iterator再迭代到entry
+            String key = (String) entry.getKey();        //从entry获取key
+            Object object = entry.getValue();    //从entry获取value
+
+            if (object instanceof String) {
+                editor.putString(key, (String) object);
+            } else if (object instanceof Integer) {
+                editor.putInt(key, (Integer) object);
+            } else if (object instanceof Boolean) {
+                editor.putBoolean(key, (Boolean) object);
+            } else if (object instanceof Float) {
+                editor.putFloat(key, (Float) object);
+            } else if (object instanceof Long) {
+                editor.putLong(key, (Long) object);
+            } else {
+                editor.putString(key, object.toString());
+            }
+
+            Log.d("sgw_dd", "Utils puts: key = "+key+";   value = "+object);
+        }
+
+//        if (object instanceof String) {
+//            editor.putString(key, (String) object);
+//        } else if (object instanceof Integer) {
+//            editor.putInt(key, (Integer) object);
+//        } else if (object instanceof Boolean) {
+//            editor.putBoolean(key, (Boolean) object);
+//        } else if (object instanceof Float) {
+//            editor.putFloat(key, (Float) object);
+//        } else if (object instanceof Long) {
+//            editor.putLong(key, (Long) object);
+//        } else {
+//            editor.putString(key, object.toString());
+//        }
+        editor.apply();
+    }
+
+    public static SharedPreferences.Editor putEditorObject(String key,Object object,SharedPreferences.Editor editor){
+
+        if (object instanceof String) {
+            editor.putString(key, (String) object);
+        } else if (object instanceof Integer) {
+            editor.putInt(key, (Integer) object);
+        } else if (object instanceof Boolean) {
+            editor.putBoolean(key, (Boolean) object);
+        } else if (object instanceof Float) {
+            editor.putFloat(key, (Float) object);
+        } else if (object instanceof Long) {
+            editor.putLong(key, (Long) object);
+        } else {
+            editor.putString(key, object.toString());
+        }
+
+        return editor;
+    }
+
+
     public static void put(Context context, String key, Object object) {
         SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
                 Context.MODE_PRIVATE);
@@ -89,7 +157,7 @@ public class Utils {
         } else {
             editor.putString(key, object.toString());
         }
-        editor.commit();
+        editor.apply();
     }
 
     public static Object get(Context context, String key, Object defaultObject) {
@@ -124,7 +192,7 @@ public class Utils {
     }
 
     public static String getLocalFilePath(String fileName) {
-        return Utils.getSDPath() + File.separator + "sim" + File.separator + fileName;
+        return Utils.getSDPath() + File.separator + fileName;//"sim" + File.separator + fileName;
     }
 
 }

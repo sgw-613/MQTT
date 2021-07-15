@@ -1,25 +1,12 @@
 package com.example.myapplication.ftp;
 
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.RemoteViews;
-import android.widget.Toast;
 
-import androidx.core.app.NotificationCompat;
-
-import com.example.myapplication.R;
+import com.example.myapplication.EditActivity;
 import com.example.myapplication.Utils;
 import com.example.myapplication.view.DownloadProgressDialog;
-import com.example.myapplication.view.NotificationUtils;
 
 import java.io.*;
 import java.net.SocketException;
@@ -259,12 +246,13 @@ public class FtpUtil {
             ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE); // 使用二进制保存方式
             ftpClient.enterLocalPassiveMode();
             ftpClient.changeWorkingDirectory(ftpPath);
-
+            Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: ftpPath =" +ftpPath);
             FTPFile[] ftpFiles = ftpClient.listFiles(fileName);
             if(null != ftpFiles && ftpFiles.length > 0)
             {
                 //file　存在
                 fileSize = ftpFiles[0].getSize();
+                Log.d("sgw_d", "FtpUtil downloadFtpFileProgress:"+fileName+"服务器存在");
             }else {
                 Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: ftp服务器不存在file返回1");
                 return FILE_NOT_EXIST; //ftp服务器不存在file返回1
@@ -282,23 +270,6 @@ public class FtpUtil {
             File localFile = new File(localPath + File.separatorChar + fileName);
             OutputStream os = new FileOutputStream(localFile);
             InputStream inputStream = ftpClient.retrieveFileStream(fileName);
-
-//            NotificationChannel channel;
-//            String channelID = "1";
-//            String channelName = "channel_name";
-//            NotificationManager manager;
-//            Notification.Builder builder;
-//            channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
-//            manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-//            manager.createNotificationChannel(channel);
-//            builder = new Notification.Builder(mContext);
-//            builder.setContentText("123456");
-//            builder.setContentTitle("123");
-//            builder.setSmallIcon(R.drawable.ic_launcher_background);
-//            builder.setOnlyAlertOnce(true);
-//            //创建通知时指定channelID
-//            builder.setChannelId(channelID);
-//            manager.notify(1, builder.build());
             progressDialog.setMax((int) fileSize);
 
             byte[] data = new byte[1024];
@@ -312,16 +283,8 @@ public class FtpUtil {
                 currentSize += count;
                 process = currentSize / step;
                 if (process % 5 == 0) {
-                    //downLoadProgressListener.onDownLoadProgress(fileSize, process);
-//                    builder.setProgress((int)fileSize, (int)process, true);
-//                    builder.setContentText("下载"+process+"%");
-//                    manager.notify(1, builder.build());
-
                         progressDialog.setProgress((int) currentSize);
-
-
-
-                    Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: process = "+process);
+                    //Log.d("sgw_d", "FtpUtil downloadFtpFileProgress: process = "+process);
                 }
 
                 os.write(data, 0, count);
@@ -394,43 +357,36 @@ public class FtpUtil {
 
     //public static String testFile = "ftp://d:d@dygodj8.com:12311/[电影天堂www.dy2018.com]犬之岛HD国英双语中字.mp4";
 
+    public static String getFtpFilePath(String fileName){
+        return "/sim/"+fileName.substring(0, 8);
+    }
 
     public static int startDownloadFtpFile(Context context, String ftpFileName,DownloadProgressDialog progressDialog, DownloadCallback callback) {
         final int[] status = {100};
-
-//        DownloadProgressDialog progressDialog = new DownloadProgressDialog(context);
-//        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//        // 设置ProgressDialog 标题
-//        progressDialog.setTitle("下载提示");
-//        // 设置ProgressDialog 提示信息
-//        progressDialog.setMessage("当前下载进度:");
-//        // 设置ProgressDialog 标题图标
-//        //progressDialog.setIcon(R.drawable.a);
-//        // 设置ProgressDialog 进度条进度
-//        // 设置ProgressDialog 的进度条是否不明确
-//        progressDialog.setIndeterminate(false);
-//        // 设置ProgressDialog 是否可以按退回按键取消
-//        progressDialog.setCancelable(true);
-//        progressDialog.show();
-
-
-
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String ftpHost = "10.119.119.67";
-                String ftpUserName = "testftp";
-                String ftpPassword = "1234";
-                String ftpPath = "/home/testftp/test";
+
+                String ftpHost = (String) Utils.get(context, EditActivity.FTP_IP_KEY, EditActivity.FTP_DEFAULT_IP);
+                String ftpUserName = (String) Utils.get(context, EditActivity.FTP_USER_KEY, EditActivity.FTP_DEFAULT_USERNAME);
+                String ftpPassword = (String) Utils.get(context, EditActivity.FTP_PASSWORD_KEY, EditActivity.FTP_DEFAULT_PASSWORD);
+                int ftpPort =(int) Utils.get(context, EditActivity.FTP_PORT_KEY, EditActivity.FTP_DEFAULT_PORT);
+                //String ftpPath = (String) Utils.get(context, EditActivity.FTP_PATH_KEY, EditActivity.FTP_DEFAULT_PATH);;
+                String ftpPath = getFtpFilePath(ftpFileName);
+                Log.d("sgw_d", "FtpUtil run: ftpPath ="+ftpPath);
+//                String ftpHost = "10.119.119.67";
+//                String ftpUserName = "testftp";
+//                String ftpPassword = "1234";
+//                String ftpPath = "/home/testftp/test";
 
 //                String ftpHost = "192.168.160.12";
 //                String ftpUserName = "sim.zhujing";
 //                String ftpPassword = "iopkl";
 //                String ftpPath = "/home/disk/code/jetson/data";
 
-                int ftpPort = 21;
+
                 String filename = ftpFileName;
-                String sdPath = Utils.getSDPath() + "/sim";
+                String sdPath = Utils.getSDPath();   ///+ "/sim"
                 String localFilePath = sdPath + "/" + filename;
                 File localFile = new File(localFilePath);
                 Log.d("sgw_d", "FtpUtil run: sdPath = "+sdPath);
@@ -458,7 +414,7 @@ public class FtpUtil {
                 String ftpPath = "/home/testftp/test";
                 int ftpPort = 21;
                 String filename = ftpFileName;
-                String sdPath = Utils.getSDPath() + "/sim";
+                String sdPath = Utils.getSDPath(); //+ "/sim";
                 String localFilePath = sdPath + "/" + filename;
                 File localFile = new File(localFilePath);
                 Log.d("sgw_d", "FtpUtil run: sdPath = "+sdPath);
