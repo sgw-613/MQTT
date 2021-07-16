@@ -16,7 +16,16 @@
         android:src="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-        <activity android:name=".VitamioVideoPlayerlayout"></activity>
+        <activity android:name=".SystemVideoPlayer">
+            android:name=".VitamioVideoPlayer"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="landscape">
+        </activity>
+        <activity
+            android:name=".VitamioVideoPlayer"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="landscape">
+        </activity>
         <activity android:name=".Play_Movie_Activity">
             <intent-filter>
                 <action android:name="com.sim.activity.playmove" />
