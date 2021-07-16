@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.Image;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.ftp.DownloadCallback;
 import com.example.myapplication.ftp.FtpUtil;
 import com.example.myapplication.view.DownloadProgressDialog;
+import com.example.myapplication.vitam.MediaItem;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -48,6 +53,8 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 	private final Constructor constructor;
 	private final int[] columnIndexs;
 	private List<Map<Integer, String>> cursorValues = new ArrayList<>();
+	private ArrayList<MediaItem> mediaItems;
+
 
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver()
 	{
@@ -198,11 +205,21 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 					String localFilePath = Utils.getLocalFilePath(fileName);
 					File localFile = new File(localFilePath);
 					if (localFile.exists()){
-						//开始播放
-						Log.d("sgw_d", "CursorRecyclerViewAdapter onClick: " + localFile.getAbsolutePath());
-						Intent intent = new Intent("com.sim.activity.playmove");
-						intent.putExtra("filename", fileName);
-						v.getContext().startActivity(intent);
+						getDataFromLocal(fileName,localFilePath);
+						MediaItem mediaItem = mediaItems.get(0);
+						Intent intent = new Intent(context,VitamioVideoPlayer.class);
+						Bundle bundle = new Bundle();
+						bundle.putSerializable("videolist",mediaItems);
+						intent.putExtras(bundle);
+						intent.putExtra("position",position);
+						context.startActivity(intent);
+
+
+//						//开始使用系统播放
+//						Log.d("sgw_d", "CursorRecyclerViewAdapter onClick: " + localFile.getAbsolutePath());
+//						Intent intent = new Intent("com.sim.activity.playmove");
+//						intent.putExtra("filename", fileName);
+//						v.getContext().startActivity(intent);
 					}else {
 						showNormalDialog(v,position,imageView,fileName);
 					}
@@ -293,6 +310,41 @@ public class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecycl
 	}
 
 
+	/**
+	 * 从本地的sdcard得到数据
+	 * //1.遍历sdcard,后缀名
+	 * //2.从内容提供者里面获取视频
+	 * //3.如果是6.0的系统，动态获取读取sdcard的权限
+	 */
+	private void getDataFromLocal(String name,String data) {
+		Log.d("sgw_d", "CursorRecyclerViewAdapter getDataFromLocal: data="+data);
+		if (mediaItems == null){
+			mediaItems = new ArrayList<>();
+		}else {
+			mediaItems.clear();
+		}
+		ContentResolver resolver = context.getContentResolver();
+		Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+		String[] objs = {
+				MediaStore.Video.Media.DISPLAY_NAME,//视频文件在sdcard的名称
+				MediaStore.Video.Media.DURATION,//视频总时长
+				MediaStore.Video.Media.SIZE,//视频的文件大小
+				MediaStore.Video.Media.DATA,//视频的绝对地址
+				MediaStore.Video.Media.ARTIST,//歌曲的演唱者
 
+		};
+		MediaItem mediaItem = new MediaItem();
+		mediaItems.add(mediaItem);//写在上面
+		//String name = cursor.getString(0);//视频的名称
+		mediaItem.setName(name);
+		//long duration = cursor.getLong(1);//视频的时长
+//		mediaItem.setDuration(duration);
+//		//long size = cursor.getLong(2);//视频的文件大小
+//		mediaItem.setSize(size);
+//		//String data = cursor.getString(3);//视频的播放地址
+		mediaItem.setData(data);
+//		//String artist = cursor.getString(4);//艺术家
+//		mediaItem.setArtist(artist);
+	}
 
 }
